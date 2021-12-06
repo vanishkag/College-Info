@@ -1,0 +1,493 @@
+#Importing packages
+import numpy as np
+import pandas as pd
+import mysql.connector
+import pymysql
+import matplotlib.pyplot as pl
+from PIL import Image
+
+import docx
+
+print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+print('\t\t\t\t\t\t'+ 'College Hunt Application')
+print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+print()
+print()
+
+#Taking input 
+name = input("Enter the student's name: ")
+options = []
+
+#On the basis of exams
+exam = input('Enter the exam taken (JEE, KCET, COMEDK): ')
+
+    
+if(exam == 'JEE'):
+    rank = int(input('Enter your rank: '))
+    print()
+    print()
+    
+    print('The college that accepts JEE MAINS rank is IIITB.')
+    print('The JEE MAINS cutoff as of 2019 was:')
+    print(J_cutoff)
+    
+    for j,rows in J_cutoff.iterrows():
+        for i,col in J_cutoff.iteritems():
+            if(rank<=J_cutoff.loc[j,i]):
+                q =  j, i
+                options.append(q)
+                
+                
+#KCET
+if(exam == 'KCET'):
+    rank = int(input('Enter your rank: '))
+    print()
+    print()
+    
+    print('The KCET cutoff as of 2019 was:')
+    print(K_cutoff)
+
+    for j,rows in K_cutoff.iterrows():
+        for i,col in K_cutoff.iteritems():
+            if(rank<=K_cutoff.loc[j,i]):
+                q =  j, i
+                options.append(q)
+                    
+                    
+
+#COMEDK
+if(exam == 'COMEDK'):
+    rank = int(input('Enter your rank: '))
+    print()
+    print()
+    
+    print('The COMEDK cutoff as of 2019 was:')
+    print(C_cutoff)
+
+    for j,rows in C_cutoff.iterrows():
+        for i,col in C_cutoff.iteritems():
+            if(rank<=C_cutoff.loc[j,i]):
+                q =  j, i
+                options.append(q)
+                    
+
+#Storing the college options in a dataframe
+optionsdf = pd.DataFrame(options, columns = ['Course','College'])
+print(optionsdf)
+print("\t\t\t\t\t\t" + "**********")
+
+
+#Making a connection with mysql
+con=mysql.connector.connect(host="localhost",user="root",passwd="server")
+mycursor=con.cursor()
+
+#Creating a database
+mycursor.execute("DROP DATABASE IF EXISTS College_Hunt")
+mycursor.execute("CREATE DATABASE College_Hunt")
+mycursor.execute("USE College_Hunt")
+
+
+
+from sqlalchemy import create_engine
+eng=create_engine('mysql+pymysql://root:server@localhost/College_Hunt')
+conn=eng.connect()
+
+#Converting dataframe to mysql table
+optionsdf.to_sql('Choices',conn,if_exists='replace')
+
+#Graphs
+print("Graphical analysis to help you choose a college: ")
+
+#No.of seats
+print("* GRAPH BASED ON NUMBER OF SEATS :")
+print(seats)
+pl.figure(figsize = (9,9))
+x = np.arange(len(seats.index))
+pl.bar(seats.index, seats['MSRIT'], width = 0.1, color = 'r' , label = 'MSRIT')
+pl.bar(x+0.15, seats['IIITB'], width = 0.1, color = 'g', label = 'IIITB')
+pl.bar(x+0.30, seats['RVCE'], width = 0.1, color = 'c', label = 'RVCE')
+pl.bar(x+0.45, seats['BMSCE'], width = 0.1, color = 'm', label = 'BMSCE')
+pl.bar(x+0.60, seats['PESU'], width = 0.1, color = 'y', label = 'PESU')
+pl.legend(loc = 'upper left')
+pl.xticks(x,['CSE','ECE','Mech','Civil'])
+pl.title('No. of seats')
+pl.show()
+print('------------------------------------------------------------------------------------------------------------------')
+print()
+print()
+
+#Offers
+print("* GRAPH BASED ON COMPANIES VISITED & OFFERS MADE :")
+print(offers)
+pl.figure(figsize = (9,9))
+x = offers.columns
+X = np.arange(len(x))
+pl.bar(x, offers.values[0],color = 'r',width = 0.1, label = 'No.of companies')
+pl.bar(X+0.15, offers.values[1],color = 'g',width = 0.1, label = 'Offers')
+pl.legend(loc = 'upper right')
+pl.title('No. of Offers')
+pl.show()
+print('----------------------------------------------------------------------------------------------------------------')
+print()
+print()
+
+#Packages
+print("* GRAPHS BASED ON PACKAGES :")
+print(packages)
+pl.figure(figsize = (9,9))
+haha=packages.columns
+t=packages.iloc[0]
+cl=['c','b','r','purple','y']
+exp=[0.1,0.3,0.1,0,0]
+pl.pie(t,labels=haha,colors=cl,startangle=90,explode=exp,shadow=True,autopct='%.1f%%')
+pl.legend(loc="upper right")
+pl.title("Highest salary package per annum")
+pl.show()
+print('-----------------------------------------------------------------------------------------------------------------')
+print()
+print()
+
+#Average packages
+ree=packages.iloc[1]
+pl.figure(figsize = (9,9))
+cl=['c','b','r','purple','y']
+exp=[0.1,0.3,0.1,0,0]
+pl.pie(ree,labels=haha,colors=cl,startangle=90,explode=exp,shadow=True,autopct='%.1f%%')
+pl.legend(loc="upper right")
+pl.title("Average salary package per annum")
+pl.show()
+print('-------------------------------------------------------------------------------------------------------------------')
+print()
+print()
+
+#Fees
+print("*GRAPHS BASED ON FEES :")
+print(feck)
+print(ifees)
+o=feck.columns
+f=feck.iloc[0]
+s=feck.iloc[1]
+g=feck.iloc[2]
+wid = 0.25
+#KCET
+pl.figure(figsize = (9,9))
+pl.bar(o,f,wid,color=['c','pink','purple','violet'])
+pl.title("KCET seat fees")
+pl.show()
+#COMEDK
+pl.figure(figsize = (9,9))
+pl.bar(o,s,wid,color=['c','pink','purple','violet'])
+pl.title("COMEDK seat fees")
+pl.show()
+#PESSAT
+pl.figure(figsize = (9,9))
+pl.bar(o,g,wid,color=['c','pink','purple','violet'])
+pl.title("PESSAT seat fees")
+pl.show()
+print('-------------------------------------------------------------------------------------------------------------------')
+print()
+print()
+
+#Final college choice
+cour = input("The course chosen: ")
+coll = input("The college chosen: ")
+print()
+print()
+
+#Checking whether the input from user matches the options available
+qry = "Select * from Choices where Course = '%s' and College = '%s';"%(cour,coll,)
+final = pd.read_sql(qry,con)
+if(len(final) == 0): 
+    print ("Sorry! You are not eligible for this particular course.") 
+    print("Your available choices are: ")
+    print(optionsdf)
+    print("Enter your choice again: ")
+    cour = input("The course chosen: ")
+    coll = input("The college chosen: ")
+    qry = "Select * from Choices where Course = '%s' and College = '%s';"%(cour,coll,)
+    final = pd.read_sql(qry,con)
+    if(len(final) == 0): 
+        print ("Sorry! You are not eligible for this particular course.")
+        print()
+        print("The program has terminated. Kindly start again")
+    else: 
+        print("Perfect choice!!")
+        print()
+        print()
+
+        #Reading a MS Word document through python
+        doc = docx.Document("C:\\Users\\sudee\\Downloads\\Colinfo.docx")
+        all_paras = doc.paragraphs
+        print("Here's a little more info about your dream college: ")
+        print()
+        print()
+
+        #Displaying additional info about the college selected
+        if(coll == 'RVCE'):
+            print(doc.paragraphs[0].text)
+            print(doc.paragraphs[1].text)
+            print(doc.paragraphs[2].text)
+            print(doc.paragraphs[3].text)
+            print(doc.paragraphs[4].text)
+        elif(coll == 'BMSCE'):
+            print(doc.paragraphs[6].text)
+            print(doc.paragraphs[7].text)
+            print(doc.paragraphs[8].text)
+            print(doc.paragraphs[9].text)
+            print(doc.paragraphs[10].text)
+        elif(coll == 'MSRIT'):
+            print(doc.paragraphs[12].text)
+            print(doc.paragraphs[13].text)
+            print(doc.paragraphs[14].text)
+        elif(coll == 'PESU'):
+            print(doc.paragraphs[16].text)
+            print(doc.paragraphs[17].text)
+            print(doc.paragraphs[18].text)
+        elif(coll == 'IIITB'):
+            print(doc.paragraphs[20].text)
+            print(doc.paragraphs[21].text)
+            print(doc.paragraphs[22].text)
+        print()
+        print()
+
+        #Image gallery
+
+        print('----------------------------------------------------------------------------------------------------------------')
+        print("\t \t \t  \t \t \t IMAGE GALLERY ")
+        print('----------------------------------------------------------------------------------------------------------------')
+        print()
+        print()
+
+        if(coll == 'RVCE'):
+            #College
+            rv1=Image.open("C:\\Users\\sudee\\Downloads\\RV1.jpg")
+            print("RV COLLEGE OF ENGINEERING :-")
+            display(rv1)
+
+            #Hostel
+            rv2=Image.open("C:\\Users\\sudee\\Downloads\\RV2.jpg")
+            print("Hostel Facilities :-")
+            display(rv2)
+
+            #Computer Lab
+            rv3=Image.open("C:\\Users\\sudee\\Downloads\\RV3.jpg")
+            print("Computer Labs :-")
+            display(rv3)
+
+
+        if(coll == 'BMSCE'):
+            #College
+            bm1=Image.open("C:\\Users\\sudee\\Downloads\\BMSCE1.jpg")
+            print("BMS COLLEGE OF ENGINEERING :-")
+            display(bm1)
+
+            #Hostel
+            bm2=Image.open("C:\\Users\\sudee\\Downloads\\BMSCE2.jpg")
+            print("Hostel Facilities :-")
+            display(bm2)
+
+            #Library
+            bm3=Image.open("C:\\Users\\sudee\\Downloads\\BMSCE3.jpg")
+            print("Library :-")
+            Bm3= bm3.resize((350,200))
+            Bm3.save('X.jpg')
+            display(Bm3)
+
+
+        if(coll == 'MSRIT'):
+            #College
+            ms1=Image.open("C:\\Users\\sudee\\Downloads\\SRIT1.jpg")
+            print("MS RAMAIAH INSTITUTE OF TECHNOLOGY :-")
+            display(ms1)
+
+            #Auditorium
+            ms2=Image.open("C:\\Users\\sudee\\Downloads\\MSRIT2.jpg")
+            print("Auditorium :-")
+            display(ms2)
+
+            #Computer Lab
+            ms3=Image.open("C:\\Users\\sudee\\Downloads\\MSRIT3.jpg")
+            print("Computer labs :-")
+            Ms3=ms3.resize((300,180))
+            Ms3.save('Y.jpg')
+            display(Ms3)
+
+
+        if(coll == 'IIITB'): 
+            #College
+            it1=Image.open("C:\\Users\\sudee\\Downloads\\IIITB1.jpg")
+            print("IIIT BANGALORE :-")
+            display(it1)
+
+            #Hostel
+            it2=Image.open("C:\\Users\\sudee\\Downloads\\IIITB2.jpg")
+            print("Hostel Facilities :-")
+            IT2= it2.resize((290,175))
+            IT2.save('Z.jpg')
+            display(IT2)
+
+            #Computer Lab
+            it3=Image.open("C:\\Users\\sudee\\Downloads\\IIITB3.jpg")
+            print("Workshops :-")
+            display(it3)
+
+
+        if(coll == 'PESU'):
+            #College
+            pes1=Image.open("C:\\Users\\sudee\\Downloads\\PES1.jpg")
+            print("PES UNIVERSITY :-")
+            display(pes1)
+
+            #Auditorium
+            pes2=Image.open("C:\\Users\\sudee\\Downloads\\PES2.jpg")
+            print("Auditorium :-")
+            display(pes2)
+
+            #Classrooms
+            pes3=Image.open("C:\\Users\\sudee\\Downloads\\pess3.jpg")
+            print("Classrooms :-")
+            display(pes3)
+
+        print()
+    #print()
+    #print()
+    
+else: 
+    print("Perfect choice!!")
+    print()
+    print()
+
+    #Reading a MS Word document through python
+    doc = docx.Document("C:\\Users\\sudee\\Downloads\\Colinfo.docx")
+    all_paras = doc.paragraphs
+    print("Here's a little more info about your dream college: ")
+    print()
+    print()
+
+    #Displaying additional info about the college selected
+    if(coll == 'RVCE'):
+        print(doc.paragraphs[0].text)
+        print(doc.paragraphs[1].text)
+        print(doc.paragraphs[2].text)
+        print(doc.paragraphs[3].text)
+        print(doc.paragraphs[4].text)
+    elif(coll == 'BMSCE'):
+        print(doc.paragraphs[6].text)
+        print(doc.paragraphs[7].text)
+        print(doc.paragraphs[8].text)
+        print(doc.paragraphs[9].text)
+        print(doc.paragraphs[10].text)
+    elif(coll == 'MSRIT'):
+        print(doc.paragraphs[12].text)
+        print(doc.paragraphs[13].text)
+        print(doc.paragraphs[14].text)
+    elif(coll == 'PESU'):
+        print(doc.paragraphs[16].text)
+        print(doc.paragraphs[17].text)
+        print(doc.paragraphs[18].text)
+    elif(coll == 'IIITB'):
+        print(doc.paragraphs[20].text)
+        print(doc.paragraphs[21].text)
+        print(doc.paragraphs[22].text)
+    print()
+    print()
+        
+    #Image gallery
+
+    print('----------------------------------------------------------------------------------------------------------------')
+    print("\t \t \t  \t \t \t IMAGE GALLERY ")
+    print('----------------------------------------------------------------------------------------------------------------')
+    print()
+    print()
+
+    if(coll == 'RVCE'):
+        #College
+        rv1=Image.open("C:\\Users\\sudee\\Downloads\\RV1.jpg")
+        print("RV COLLEGE OF ENGINEERING :-")
+        display(rv1)
+
+        #Hostel
+        rv2=Image.open("C:\\Users\\sudee\\Downloads\\RV2.jpg")
+        print("Hostel Facilities :-")
+        display(rv2)
+
+        #Computer Lab
+        rv3=Image.open("C:\\Users\\sudee\\Downloads\\RV3.jpg")
+        print("Computer Labs :-")
+        display(rv3)
+
+    
+    if(coll == 'BMSCE'):
+        #College
+        bm1=Image.open("C:\\Users\\sudee\\Downloads\\BMSCE1.jpg")
+        print("BMS COLLEGE OF ENGINEERING :-")
+        display(bm1)
+
+        #Hostel
+        bm2=Image.open("C:\\Users\\sudee\\Downloads\\BMSCE2.jpg")
+        print("Hostel Facilities :-")
+        display(bm2)
+
+        #Library
+        bm3=Image.open("C:\\Users\\sudee\\Downloads\\BMSCE3.jpg")
+        print("Library :-")
+        Bm3= bm3.resize((350,200))
+        Bm3.save('X.jpg')
+        display(Bm3)
+
+    
+    if(coll == 'MSRIT'):
+        #College
+        ms1=Image.open("C:\\Users\\sudee\\Downloads\\SRIT1.jpg")
+        print("MS RAMAIAH INSTITUTE OF TECHNOLOGY :-")
+        display(ms1)
+
+        #Auditorium
+        ms2=Image.open("C:\\Users\\sudee\\Downloads\\MSRIT2.jpg")
+        print("Auditorium :-")
+        display(ms2)
+
+        #Computer Lab
+        ms3=Image.open("C:\\Users\\sudee\\Downloads\\MSRIT3.jpg")
+        print("Computer labs :-")
+        Ms3=ms3.resize((300,180))
+        Ms3.save('Y.jpg')
+        display(Ms3)
+
+
+    if(coll == 'IIITB'): 
+        #College
+        it1=Image.open("C:\\Users\\sudee\\Downloads\\IIITB1.jpg")
+        print("IIIT BANGALORE :-")
+        display(it1)
+
+        #Hostel
+        it2=Image.open("C:\\Users\\sudee\\Downloads\\IIITB2.jpg")
+        print("Hostel Facilities :-")
+        IT2= it2.resize((290,175))
+        IT2.save('Z.jpg')
+        display(IT2)
+
+        #Computer Lab
+        it3=Image.open("C:\\Users\\sudee\\Downloads\\IIITB3.jpg")
+        print("Workshops :-")
+        display(it3)
+
+
+    if(coll == 'PESU'):
+        #College
+        pes1=Image.open("C:\\Users\\sudee\\Downloads\\PES1.jpg")
+        print("PES UNIVERSITY :-")
+        display(pes1)
+
+        #Auditorium
+        pes2=Image.open("C:\\Users\\sudee\\Downloads\\PES2.jpg")
+        print("Auditorium :-")
+        display(pes2)
+
+        #Classrooms
+        pes3=Image.open("C:\\Users\\sudee\\Downloads\\pess3.jpg")
+        print("Classrooms :-")
+        display(pes3)
+
+    print()
